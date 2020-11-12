@@ -3,7 +3,7 @@
     "B2C.Spa": {
       "commandName": "Project",
       "launchBrowser": false,
-      "applicationUrl": "http://localhost:6420",
+      "applicationUrl": "https://localhost:6420",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
