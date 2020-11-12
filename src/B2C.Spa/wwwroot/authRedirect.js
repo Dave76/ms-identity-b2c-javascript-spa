@@ -43,14 +43,14 @@ function selectAccount () {
 }
 
 function handleResponse(response) {
-    console.log(response);
+    
     /**
      * To see the full list of response object properties, visit:
      * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/request-response-object.md#response
      */
 
     if (response !== null) {
-        
+        console.log(response);    
         /**
          * We need to reject id tokens that were not issued with the default sign-in policy.
          * "acr" claim in the token tells us what policy is used (NOTE: for new policies (v2.0), use "tfp" instead of "acr").
@@ -71,11 +71,13 @@ function handleResponse(response) {
             window.alert("Profile has been updated successfully.");
     
             if (myMSALObj.getAllAccounts()) {
-                welcomeUser(username);
+                selectAccount();
+                //welcomeUser(username);
             }
     
         } else {
-            welcomeUser(username);
+            //welcomeUser(username);
+            selectAccount();
         }
     } else {  
         selectAccount();
@@ -131,14 +133,16 @@ function getTokenRedirect(request) {
  
 // Acquires and access token and then passes it to the API call
 function passTokenToApi() {
-   getTokenRedirect(tokenRequest);
-   if (accessToken) {
-        try {
-            callApi(apiConfig.webApi, accessToken);
-        } catch(error) {
-            console.warn(error); 
+    getTokenRedirect(tokenRequest).then(response => {
+        if (response) {
+            console.log("access_token acquired at: " + new Date().toString());
+            try {
+                callApi(apiConfig.webApi, response.accessToken);
+            } catch (error) {
+                console.warn(error);
+            }
         }
-    }
+    });
 }
 
 function editProfile() {
