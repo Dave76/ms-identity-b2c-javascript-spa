@@ -15,13 +15,13 @@ myMSALObj.handleRedirectPromise()
         if (error.errorMessage.indexOf("AADB2C90118") > -1) {
             try {
                 myMSALObj.loginRedirect(b2cPolicies.authorities.forgotPassword);
-            } catch(err) {
+            } catch (err) {
                 console.log(err);
             }
         }
     });
 
-function selectAccount () {
+function selectAccount() {
 
     /**
      * See here for more information on account retrieval: 
@@ -30,11 +30,14 @@ function selectAccount () {
 
     const currentAccounts = myMSALObj.getAllAccounts();
 
-    if (!currentAccounts  || currentAccounts.length < 1) {
+    if (!currentAccounts || currentAccounts.length < 1) {
+        console.log("No accounts detected.")
         return;
     } else if (currentAccounts.length > 1) {
-        // Add your account choosing logic here
-        console.warn("Multiple accounts detected.");
+        // Add your account choosing logic here... but for now just take the last one
+        accountId = currentAccounts[currentAccounts.length - 1].homeAccountId;
+        username = currentAccounts[currentAccounts.length - 1].username;
+        welcomeUser(username);
     } else if (currentAccounts.length === 1) {
         accountId = currentAccounts[0].homeAccountId;
         username = currentAccounts[0].username;
@@ -43,21 +46,22 @@ function selectAccount () {
 }
 
 function handleResponse(response) {
-    
+
     /**
      * To see the full list of response object properties, visit:
      * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/request-response-object.md#response
      */
+    console.log("Handling redirect response...");
 
     if (response !== null) {
-        console.log(response);    
+
         /**
          * We need to reject id tokens that were not issued with the default sign-in policy.
          * "acr" claim in the token tells us what policy is used (NOTE: for new policies (v2.0), use "tfp" instead of "acr").
          * To learn more about B2C tokens, visit https://docs.microsoft.com/en-us/azure/active-directory-b2c/tokens-overview
          */
-
-        if (response.idTokenClaims['acr'] === b2cPolicies.names.forgotPassword) {
+    
+        if (response.idTokenClaims['tfp'] === b2cPolicies.names.forgotPassword) {
             window.alert("Password has been reset successfully. \nPlease sign-in with your new password.");
 
             // Choose which account to logout from by passing a username.
@@ -66,20 +70,21 @@ function handleResponse(response) {
             };
 
             myMSALObj.logout(logoutRequest);
-    
-        } else if (response.idTokenClaims['acr'] === b2cPolicies.names.editProfile) {
-            window.alert("Profile has been updated successfully.");
-    
+
+        } else if (response.idTokenClaims['tfp'] === b2cPolicies.names.editProfile) {
+
+            logMessage("Return from edit profile");
+
+
+
             if (myMSALObj.getAllAccounts()) {
                 selectAccount();
-                //welcomeUser(username);
             }
-    
+
         } else {
-            //welcomeUser(username);
             selectAccount();
         }
-    } else {  
+    } else {
         selectAccount();
     }
 }
@@ -116,21 +121,21 @@ function getTokenRedirect(request) {
     * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-common/docs/Accounts.md
     */
 
-   request.account = myMSALObj.getAccountByHomeId(accountId);
-   
-   return myMSALObj.acquireTokenSilent(request)
-       .catch(error => {
-           console.warn(error);
-           console.warn("silent token acquisition fails. acquiring token using popup");
-           if (error instanceof msal.InteractionRequiredAuthError) {
-               // fallback to interaction when silent call fails
-               return myMSALObj.acquireTokenRedirect(request);
-           } else {
-               console.warn(error);   
-           }
-   });
+    request.account = myMSALObj.getAccountByHomeId(accountId);
+
+    return myMSALObj.acquireTokenSilent(request)
+        .catch(error => {
+            console.warn(error);
+            console.warn("silent token acquisition fails. acquiring token using popup");
+            if (error instanceof msal.InteractionRequiredAuthError) {
+                // fallback to interaction when silent call fails
+                return myMSALObj.acquireTokenRedirect(request);
+            } else {
+                console.warn(error);
+            }
+        });
 }
- 
+
 // Acquires and access token and then passes it to the API call
 function passTokenToApi() {
     getTokenRedirect(tokenRequest).then(response => {
@@ -147,4 +152,8 @@ function passTokenToApi() {
 
 function editProfile() {
     myMSALObj.loginRedirect(b2cPolicies.authorities.editProfile);
+}
+
+function resetPassword() {
+    myMSALObj.loginRedirect(b2cPolicies.authorities.forgotPassword);
 }

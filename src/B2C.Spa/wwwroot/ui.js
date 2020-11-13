@@ -6,8 +6,9 @@ const welcomeDiv = document.getElementById('welcome-div');
 const tableDiv = document.getElementById('table-div');
 const tableBody = document.getElementById('table-body-div');
 const editProfileButton = document.getElementById('editProfileButton');
+const resetPasswordButton = document.getElementById('resetPasswordButton');
 const callApiButton = document.getElementById('callApiButton');
-const response = document.getElementById("response");
+const response = document.getElementById('response');
 const label = document.getElementById('label');
 
 function welcomeUser(username) {
@@ -16,6 +17,7 @@ function welcomeUser(username) {
     signOutButton.classList.remove('d-none');
     titleDiv.classList.add('d-none');
     editProfileButton.classList.remove('d-none');
+    resetPasswordButton.classList.remove('d-none');
     welcomeDiv.classList.remove('d-none');
     welcomeDiv.innerHTML = `Welcome ${username}!`
     callApiButton.classList.remove('d-none');
